@@ -1,0 +1,46 @@
+version: '3'                                            # docker-composeのバージョン
+
+services:
+  mysql:                                                # サービス名
+    image: mysql:8.0.33                                 # イメージ名
+    container_name: mysql_container                     # コンテナ名
+    volumes:                                            # バインドマウント (ホスト側:コンテナ側)
+      - ./docker/mysql/data:/var/lib/mysql              # データベースのデータを保存するディレクトリをマウント
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf  # 設定ファイルをマウント
+      - ./docker/mysql/sql:/docker-entrypoint-initdb.d  # イメージを起動時に実行するSQLファイルをマウント
+    ports:
+      - 3306:3306                                       # ポートフォワーディング (ホスト側:コンテナ側)
+    environment:                                        # 環境変数の設定
+      MYSQL_ROOT_PASSWORD: root                         # rootユーザのパスワード
+      MYSQL_DATABASE: test                              # データベース名
+      MYSQL_USER: test                                  # ユーザ名
+      MYSQL_PASSWORD: test                              # パスワード
+      TZ: Asia/Tokyo                                    # タイムゾーン
+    # コンテナ起動時に実行するコマンド（文字コードと照合順序を指定）
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always                                     # コンテナ停止時の再起動設定（常に再起動）
+
+  phpmyadmin:                                           # サービス名
+    image: phpmyadmin:5.2.1                             # イメージ名
+    container_name: phpmyadmin_container                # コンテナ名
+    ports:
+      - 8080:80                                         # ポートフォワーディング (ホスト側:コンテナ側)
+    environment:                                        # 環境変数の設定
+      PMA_HOST: mysql                                   # MySQLのホスト名
+      PMA_USER: root                                    # MySQLのユーザ名
+      PMA_PASSWORD: root                                # MySQLのパスワード
+    depends_on:
+      - mysql                                           # サービス依存関係の設定（mysqlサービスが起動してからphpmyadminサービスを起動）
+    restart: always                                     # コンテナ停止時の再起動設定（常に再起動）
+
+  php-apache:                                           # サービス名
+    build: ./docker/php                                 # Dockerfileのあるディレクトリを指定
+    container_name: php-apache_container                # コンテナ名
+    volumes:                                            # バインドマウント (ホスト側:コンテナ側)
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini # 設定ファイルをマウント
+      - ./html:/var/www/html                            # ウェブサーバのドキュメントルートをマウント
+    ports:
+      - 80:80                                           # ポートフォワーディング (ホスト側:コンテナ側)
+    depends_on:
+      - mysql                                           # サービス依存関係の設定（mysqlサービスが起動してからphp-apacheサービスを起動）
+    restart: always                                     # コンテナ停止時の再起動設定（常に再起動）

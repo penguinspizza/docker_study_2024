@@ -1,0 +1,13 @@
+version: '3'                                  # docker-composeのバージョン
+
+services:
+  pygame:                                     # サービス名
+    build: ./docker/pygame                    # Dockerfileのあるディレクトリを指定
+    container_name: python39_pygame_container # コンテナ名
+    environment:                              # 環境変数の設定
+      - DISPLAY=host.docker.internal:0.0      # ホスト側のディスプレイをコンテナ側に渡す（host.docker.internal:0.0はホストマシンのIPアドレスとディスプレイ番号）
+    volumes:                                  # バインドマウント (ホスト側:コンテナ側)
+      - ./root:/root                          # ホスト側のrootディレクトリをコンテナ側のrootディレクトリにマウント
+    tty: true                                 # コンテナの標準入出力を有効にする（これがないとコンテナが即停止する）
+    stdin_open: true                          # コンテナの標準入出力を有効にする（これがないとコンテナが即停止する）
+    restart: always                           # コンテナ停止時の再起動設定（常に再起動）

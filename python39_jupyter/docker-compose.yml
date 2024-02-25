@@ -1,0 +1,11 @@
+version: '3'                                    # docker-composeのバージョン
+
+services:
+  jupyter:                                      # サービス名
+    build: ./docker/jupyter                     # Dockerfileのあるディレクトリ
+    container_name: python39_jupyter_container  # コンテナ名
+    ports:
+      - "8888:8888"                             # ポートフォワーディング (ホスト側:コンテナ側)
+    volumes:
+      - ./notebooks:/usr/src/app/notebooks      # バインドマウント (ホスト側:コンテナ側)
+    restart: always                             # コンテナ停止時の再起動設定（常に再起動）
